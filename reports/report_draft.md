@@ -116,33 +116,82 @@ The principal components capture correlated variation in socio-economic variable
 
 ---
 
-## 8. Hierarchical Clustering Design
+## 8. Clustering Algorithm Selection
 
-### 8.1 Method
+Rather than committing to a single clustering algorithm upfront, we evaluate three candidate algorithms after EDA to determine which best suits the structure of the data.
 
-- **Algorithm:** Agglomerative hierarchical clustering with Ward linkage
-- **Distance metric:** Euclidean (in PCA space)
-- **Cluster selection:** Silhouette score sweep for k ∈ [2, 7]
+### 8.1 Candidate Algorithms
 
-### 8.2 Why hierarchical clustering?
+**Algorithm A — K-Means**
+- Partitions ZIPs into k clusters by minimizing within-cluster variance
+- Fast and interpretable; performs well when clusters are roughly spherical and similar in size
+- Limitation: assumes equal cluster sizes and is sensitive to outliers; our data contains a small number of very low-population LA ZIPs that may skew centroids
 
-- Dendrograms provide interpretable hierarchical structure
-- Ward linkage minimizes within-cluster variance
-- No need to specify k a priori; silhouette score guides selection
+**Algorithm B — Agglomerative Hierarchical Clustering (Ward linkage)**
+- Builds a hierarchy of clusters bottom-up; Ward linkage minimizes within-cluster variance at each merge step
+- Dendrogram provides visual insight into cluster structure without requiring k to be specified a priori
+- Handles unequal cluster sizes well
+- Limitation: cannot reassign points once merged; computationally slower at scale
+
+**Algorithm C — DBSCAN (Density-Based Spatial Clustering)**
+- Groups ZIPs based on density of neighbors; naturally identifies outliers as noise
+- Does not require k to be specified; can find arbitrarily shaped clusters
+- Limitation: requires tuning of ε (neighborhood radius) and min_samples; performance degrades in high-dimensional PCA space
+
+### 8.2 Algorithm Selection Criteria
+
+The final algorithm will be selected after EDA based on:
+- **Cluster shape:** PCA scatter plots reveal whether clusters are spherical (favors K-Means) or irregular (favors DBSCAN/Hierarchical)
+- **Outlier presence:** If low-population ZIPs form isolated points, DBSCAN handles them more gracefully
+- **Cluster size distribution:** Unequal sizes favor Hierarchical or DBSCAN over K-Means
+- **Interpretability:** All three are evaluated on whether resulting cluster profiles map to recognizable real-world neighborhood archetypes
+
+### 8.3 Preliminary Finding
+
+Initial EDA and PCA results suggest unequal cluster sizes (ranging from 4 to 148 ZIPs) and the presence of outlier ZIPs with very small populations. Based on this, **Agglomerative Hierarchical Clustering with Ward linkage** is the leading candidate, though K-Means will be run as a comparison baseline. Final algorithm selection will be confirmed in the next iteration.
 
 ---
 
 ## 9. Validation Metrics and Model Selection
 
-### 9.1 Silhouette Score
+We adopt multiple complementary evaluation metrics to assess clustering quality from different angles:
 
-For each k, we computed the silhouette score (range [-1, 1]):
-- Higher scores indicate more cohesive, well-separated clusters
-- Score near 0 suggests overlapping clusters
+### 9.1 Internal Validation Metrics
 
-### 9.2 Model Selection
+| Metric | What it Measures | Range | Goal |
+|--------|-----------------|-------|------|
+| **Silhouette Score** | How similar each point is to its own cluster vs. neighboring clusters | [-1, 1] | Maximize |
+| **Davies-Bouldin Index** | Average ratio of within-cluster scatter to between-cluster separation | [0, ∞) | Minimize |
+| **Calinski-Harabasz Index** | Ratio of between-cluster variance to within-cluster variance | [0, ∞) | Maximize |
+| **Inertia (Elbow Method)** | Total within-cluster sum of squares (K-Means only) | [0, ∞) | Minimize; look for elbow |
 
-Selected k with the highest silhouette score. [To be filled with actual result.]
+Using multiple metrics guards against optimizing for a single measure that may not reflect true cluster quality.
+
+### 9.2 External / Qualitative Validation
+
+- **Cluster interpretability:** Do cluster profiles correspond to meaningful real-world neighborhood types (e.g., high-income low-density suburbs vs. dense renter-heavy urban cores)?
+- **Geographic coherence:** Do ZIPs within a cluster belong to spatially contiguous or logically similar neighborhoods?
+- **City separation:** Do NYC and LA ZIP codes distribute meaningfully across clusters, reflecting known structural differences?
+
+### 9.3 Model Selection Process
+
+1. Run all three candidate algorithms (K-Means, Hierarchical, DBSCAN) on PCA-transformed features
+2. Compute all four internal metrics for each algorithm and each k (where applicable)
+3. Select the algorithm + k combination with the best combined metric profile
+4. Validate selected model qualitatively through cluster profiling and NYC vs LA comparison
+
+### 9.4 Current Results (Agglomerative Clustering, Ward Linkage)
+
+| k | Silhouette | Davies-Bouldin | Calinski-Harabasz |
+|---|-----------|----------------|-------------------|
+| 2 | 0.2576 | [to be added] | [to be added] |
+| 3 | 0.2464 | [to be added] | [to be added] |
+| 4 | 0.2545 | [to be added] | [to be added] |
+| 5 | 0.2675 | [to be added] | [to be added] |
+| **6** | **0.2697** | [to be added] | [to be added] |
+| 7 | 0.2598 | [to be added] | [to be added] |
+
+Optimal k = 6 selected based on silhouette score. Davies-Bouldin and Calinski-Harabasz scores will be computed and compared across algorithms in the final report.
 
 ---
 
