@@ -1,49 +1,28 @@
 # Urban Energy Analytics: NYC vs LA 2022
 
-**Project Goal:** Identify distinct energy consumption patterns across ZIP codes in New York City and Los Angeles using data mining techniques (PCA + hierarchical clustering).
+This project analyzes residential electricity consumption patterns across ZIP codes in New York City and Los Angeles using 2022 data. We use PCA for dimensionality reduction and compare three clustering algorithms (K-Means, Hierarchical, DBSCAN) to identify distinct neighborhood energy profiles and understand how socio-economic factors relate to electricity usage.
 
-**Data:** 2022 EIA Form 861 (residential electricity sales) + 2022 ACS 5-year estimates (socio-economic data)  
-**Methods:** PCA for dimensionality reduction, agglomerative clustering with silhouette evaluation  
-**Output:** Neighborhood energy profiles, comparative insights on NYC vs LA
+**Data sources:** EIA Form 861 2022 (residential electricity sales) + ACS 2022 5-year estimates (demographics)
 
 ---
 
-## Quick Start
-
-### Prerequisites
-- Python 3.8+
-- pip
-
-### Setup
+## Setup
 
 ```bash
-# 1. Clone repository
 git clone <repo>
 cd Urban-Energy-Analytics
-
-# 2. Install dependencies
 pip install -r requirements.txt
-
-# 3. Run the notebook
 jupyter notebook notebooks/urban_energy_analysis.ipynb
 ```
 
 ### Google Colab
 
-You can also run this project in Google Colab:
-
-1. Upload the notebook to Google Drive or clone the repo
-2. Open the notebook in Colab
-3. In the first cell, mount Google Drive and install dependencies:
+1. Upload the repo or clone it in Colab
+2. Mount Drive if needed and install dependencies:
    ```python
-   # Mount Drive (if needed)
-   from google.colab import drive
-   drive.mount('/content/drive')
-   
-   # Install dependencies
    !pip install -r requirements.txt
    ```
-4. Run the cells in order
+3. Run cells in order
 
 ---
 
@@ -51,20 +30,17 @@ You can also run this project in Google Colab:
 
 ```
 Urban-Energy-Analytics/
-├── .gitignore
-├── README.md
-├── PLAN.md
-├── requirements.txt
 ├── data/
 │   ├── raw/
-│   │   ├── eia861_sales_2022.csv
-│   │   └── acs_zcta_2022.csv
+│   │   ├── eia861_sales_2022.csv       # EIA residential electricity data
+│   │   └── acs_zcta_2022.csv           # ACS demographic data
 │   └── processed/
-│       └── nyc_la_merged.csv
+│       └── nyc_la_merged.csv           # Pipeline output
 ├── notebooks/
-│   └── urban_energy_analysis.ipynb
+│   └── urban_energy_analysis.ipynb     # Main analysis
+├── scripts/
+│   └── prepare_data.py                 # Data download script (run once)
 ├── src/
-│   ├── __init__.py
 │   ├── data_loader.py
 │   ├── data_cleaner.py
 │   ├── feature_engineering.py
@@ -73,41 +49,35 @@ Urban-Energy-Analytics/
     └── report_draft.md
 ```
 
+The datasets are committed to the repo — no API keys or downloads needed to run the notebook.
+
 ---
 
 ## Data Pipeline
 
-1. **Load:** Read EIA and ACS CSVs from `data/raw/`
-2. **Clean:** Standardize ZIP codes, handle missing values
-3. **Merge:** Inner join on ZIP/ZCTA
-4. **Filter:** Keep only NYC and LA ZIP codes
-5. **Feature Engineering:** Derive 5 modeling features
-6. **PCA:** Reduce to 2–3 components (85% variance)
-7. **Clustering:** Agglomerative hierarchical clustering
-8. **Evaluate:** Silhouette scores, dendrograms, profiles
-
----
-
-## Key Features
-
-- **No API keys required:** Datasets committed to repo
-- **Reproducible:** Fixed data, deterministic pipeline
-- **Modular:** Separate modules for each pipeline step
-- **Jupyter-based:** Analysis with code + markdown + visualizations
-- **Colab-compatible:** Works in both local and cloud environments
+1. Load EIA + ACS CSVs from `data/raw/`
+2. Clean: standardize ZIP codes, remove invalid rows
+3. Merge: inner join on ZIP/ZCTA (~26% loss expected — normal for ZIP vs ZCTA mismatch)
+4. Filter: keep only NYC and LA ZIP codes
+5. Feature engineering: 5 derived features per ZIP
+6. PCA: reduce to components explaining 85%+ variance
+7. Clustering: compare K-Means, Hierarchical, and DBSCAN
+8. Evaluate: Silhouette, Davies-Bouldin, Calinski-Harabasz metrics
 
 ---
 
 ## Team
 
-- Atharva Prasanna Mokashi (SJSU ID: 019117046)
-- Maitreya Patankar (SJSU ID: 019146166)
-- Vineet Malewar (SJSU ID: 018399589)
-- Shefali Saini (SJSU ID: 018281848)
+| Name | SJSU ID |
+|------|---------|
+| Atharva Prasanna Mokashi | 019117046 |
+| Maitreya Patankar | 019146166 |
+| Vineet Malewar | 018399589 |
+| Shefali Saini | 018281848 |
 
 ---
 
 ## References
 
-- **EIA Form 861:** https://www.eia.gov/electricity/data/eia861/
-- **ACS 2022 5-Year Estimates:** https://data.census.gov
+- EIA Form 861: https://www.eia.gov/electricity/data/eia861/
+- ACS 2022 5-Year Estimates: https://data.census.gov
